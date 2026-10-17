@@ -22,7 +22,7 @@ def create_app(overrides=None):
     db.migrate(app.config["DATABASE_PATH"])
     app.teardown_appcontext(db.close_db)
 
-    from import admin, auth, public, teacher
+    from . import admin, auth, public, teacher
     for bp in (auth.bp, teacher.bp, admin.bp, public.bp):
         app.register_blueprint(bp)
 
