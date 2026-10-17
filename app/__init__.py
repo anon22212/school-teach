@@ -15,7 +15,7 @@ def create_app(overrides=None):
     app.config.update(load_config(overrides))
     app.secret_key = app.config["SECRET_KEY"]
 
-       from . import ai, db
+    from . import ai, db
     
     app.extensions["ai_provider"] = ai.build_provider(app.config)
     _setup_logging(app)
