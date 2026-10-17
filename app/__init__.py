@@ -15,19 +15,20 @@ def create_app(overrides=None):
     app.config.update(load_config(overrides))
     app.secret_key = app.config["SECRET_KEY"]
 
-    from . import ai, db
+       from . import ai, db
     
     app.extensions["ai_provider"] = ai.build_provider(app.config)
     _setup_logging(app)
-    db.migrate(app.config["DATABASE_PATH"])
     app.teardown_appcontext(db.close_db)
 
     from . import admin, auth, public, teacher
     for bp in (auth.bp, teacher.bp, admin.bp, public.bp):
         app.register_blueprint(bp)
 
-        app.database_initialized = False
+    # Флаг выровнен строго по границе функции create_app
+    app.database_initialized = False
 
+    # Блок обработки запросов теперь находится внутри create_app
     @app.before_request
     def load_user():
         if not getattr(app, "database_initialized", False):
@@ -46,7 +47,6 @@ def create_app(overrides=None):
             else:
                 session.clear()
         check_csrf()
-
 
     @app.after_request
     def headers(resp):
