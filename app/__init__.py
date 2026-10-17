@@ -6,7 +6,6 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, g, render_template, request, session
 
-from import ai, db
 from config import load_config
 from security import check_csrf, csrf_token
 
@@ -15,6 +14,9 @@ def create_app(overrides=None):
     app = Flask(__name__)
     app.config.update(load_config(overrides))
     app.secret_key = app.config["SECRET_KEY"]
+
+    from app import ai, db
+    
     app.extensions["ai_provider"] = ai.build_provider(app.config)
     _setup_logging(app)
     db.migrate(app.config["DATABASE_PATH"])
