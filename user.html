@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf, status with context %}
+{% block title %}{{ u.name }}{% endblock %}
+{% block content %}
+<div class="row between mb"><h1>{{ u.name }} <span class="badge {{ 'success' if u.status=='active' else 'suspended' }}">{{ 'Активен' if u.status=='active' else 'Приостановлен' }}</span></h1><a class="btn ghost sm" href="{{ url_for('admin.users') }}">← К списку</a></div>
+<div class="grid g4 mb">
+<div class="card flat stat"><b>{{ st.total or 0 }}</b><span>Генераций (успешно {{ st.ok or 0 }}, ошибок {{ st.bad or 0 }})</span></div>
+<div class="card flat stat"><b>{{ '$%.4f'|format(st.cost) }}</b><span>Оценка расходов на AI</span></div>
+<div class="card flat stat"><b>{{ st.tin + st.tout }}</b><span>Токенов всего</span></div>
+<div class="card flat stat"><b>{{ u.last_active_at|dt }}</b><span>Последняя активность</span></div></div>
+<div class="card mb"><p><b>Email:</b> {{ u.email }} · <b>Роль:</b> {{ 'Администратор' if u.role=='admin' else 'Учитель' }} · <b>Регистрация:</b> {{ u.created_at|dt }} · <b>Последний вход:</b> {{ u.last_login_at|dt }}</p>
+{% if u.role != 'admin' and u.id != g.user.id %}<form method="post" action="{{ url_for('admin.user_status', uid=u.id) }}" class="row" data-confirm="Изменить доступ пользователя?">{{ csrf() }}
+{% if u.status == 'active' %}<input type="hidden" name="action" value="suspend"><button class="btn bad sm" type="submit">Приостановить доступ</button>{% else %}<input type="hidden" name="action" value="restore"><button class="btn ok sm" type="submit">Восстановить доступ</button>{% endif %}</form>{% endif %}</div>
+<div class="card"><h2>История генераций</h2>{% if rows %}<div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Предмет</th><th>Класс</th><th>Тема</th><th>Статус</th><th></th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.created_at|dt }}</td><td>{{ types[r.type] }}</td><td>{{ r.subject }}</td><td>{{ r.grade }}{{ r.class_letter }}</td><td>{{ r.topic }}</td><td>{{ status(r.status, statuses) }}</td><td><a class="btn sm" href="{{ url_for('admin.generation', gid=r.id) }}">Просмотр</a></td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="muted">Генераций пока нет.</p>{% endif %}</div>
+{% endblock %}

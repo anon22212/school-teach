@@ -1,0 +1,23 @@
+{% extends "base_public.html" %}
+{% block title %}AI-помощник учителя{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <span class="badge">Для учителей 1–11 классов</span>
+    <h1 class="mt">Контрольные, тесты и планы уроков — <em>за пару минут</em></h1>
+    <p class="muted" style="font-size:1.12rem">TeacherAI готовит варианты работ с ответами и критериями, планы уроков и тесты по ссылке. Всё редактируется и экспортируется в PDF и Word.</p>
+    <div class="row mt"><a class="btn" href="{{ url_for('auth.register') }}">Начать бесплатно</a><a class="btn ghost" href="{{ url_for('auth.login') }}">Войти</a></div>
+  </div>
+  <div class="scene" aria-hidden="true">
+    <div class="stage"><div class="face f1">5</div><div class="face f2">A+</div><div class="face f3">✓</div><div class="face f4">?</div><div class="face f5">π</div><div class="face f6">Ω</div></div>
+    <div class="chip3d">9Б · Закон Ома</div><div class="chip3d">4 варианта</div><div class="chip3d">Ключ ответов</div>
+  </div>
+</section>
+<section class="features">
+  <div class="card tilt"><div class="icon3d">📝</div><h3>Конструктор контрольных</h3><p class="muted">До 10 равнозначных вариантов: предмет, класс и буква, тема, сложность, баллы, критерии.</p></div>
+  <div class="card tilt"><div class="icon3d" style="--c1:#f7c06a;--c2:#e8982a;--c3:#b87414">🎓</div><h3>План урока</h3><p class="muted">Этапы с временем, объяснение, примеры, вопросы, домашнее задание. Из урока — в контрольную в один клик.</p></div>
+  <div class="card tilt"><div class="icon3d" style="--c1:#6fd3a5;--c2:#2d9d6a;--c3:#1f7a50">✅</div><h3>Тесты по ссылке</h3><p class="muted">Ученики проходят тест онлайн, правильные ответы видны только после завершения.</p></div>
+  <div class="card tilt"><div class="icon3d" style="--c1:#f09a96;--c2:#d4524e;--c3:#a83a37">📄</div><h3>PDF и Word</h3><p class="muted">Ученическая версия без ответов и отдельный файл с ключом для учителя.</p></div>
+</section>
+<p class="muted small" style="text-align:center;padding-bottom:30px"><a href="{{ url_for('public.privacy') }}">Конфиденциальность и данные</a></p>
+{% endblock %}

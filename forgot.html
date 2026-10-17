@@ -1,0 +1,8 @@
+{% extends "base_public.html" %}{% from "_macros.html" import csrf with context %}
+{% block title %}Восстановление доступа{% endblock %}
+{% block content %}<div class="authbox"><div class="card"><h1>Восстановление доступа</h1>
+{% if sent and mail_ok %}<div class="alert success">Если такой email зарегистрирован, мы отправили письмо со ссылкой для смены пароля (действует 1 час).</div>
+{% elif sent %}<div class="alert warn">Отправка писем на этом сервере не настроена. Попросите администратора сбросить пароль.</div>{% endif %}
+<form method="post">{{ csrf() }}<div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required></div>
+<button class="btn" style="width:100%" type="submit">Отправить ссылку</button></form>
+<p class="small mt"><a href="{{ url_for('auth.login') }}">← Вернуться ко входу</a></p></div></div>{% endblock %}

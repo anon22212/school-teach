@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}TeacherAI{% endblock %} — TeacherAI</title>
+<meta name="color-scheme" content="light dark">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+{% macro nav(endpoint, icon, label, match=None) %}
+  <a href="{{ url_for(endpoint) }}" class="{{ 'active' if request.endpoint == endpoint or (match and request.endpoint in match) }}"><span class="ic">{{ icon }}</span>{{ label }}</a>
+{% endmacro %}
+
+<div class="shell">
+  <aside class="sidebar">
+    <a class="brand" href="{{ url_for('public.index') }}"><span class="logo3d">T</span>TeacherAI</a>
+    <nav class="nav">
+      {% if g.user.role == 'admin' %}
+        <div class="sep">Администратор</div>
+        {{ nav('admin.dashboard', '📊', 'Дашборд') }}
+        {{ nav('admin.generations', '🗂️', 'Журнал генераций', ['admin.generation']) }}
+        {{ nav('admin.users', '👥', 'Пользователи', ['admin.user']) }}
+        {{ nav('admin.analytics', '📈', 'Аналитика') }}
+        <div class="sep">Как учитель</div>
+      {% endif %}
+      {% if g.user.role != 'admin' %}{{ nav('teacher.dashboard', '🏠', 'Главная') }}{% endif %}
+      <a href="{{ url_for('teacher.generator', mode='work') }}" class="{{ 'active' if request.view_args and request.view_args.get('mode')=='work' }}"><span class="ic">📝</span>Контрольная</a>
+      <a href="{{ url_for('teacher.generator', mode='test') }}" class="{{ 'active' if request.view_args and request.view_args.get('mode')=='test' }}"><span class="ic">✅</span>Тест</a>
+      <a href="{{ url_for('teacher.generator', mode='lesson') }}" class="{{ 'active' if request.view_args and request.view_args.get('mode')=='lesson' }}"><span class="ic">🎓</span>Подготовить урок</a>
+      <div class="sep">Мои материалы</div>
+      {{ nav('teacher.materials', '📚', 'Сохранённые', ['teacher.editor']) }}
+      {{ nav('teacher.history', '🕘', 'История', ['teacher.history_item']) }}
+      {{ nav('auth.profile', '⚙️', 'Настройки') }}
+    </nav>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="btn ghost sm burger" id="burger" aria-label="Меню">☰</button>
+      <div class="grow"></div>
+      <button class="btn ghost sm" id="theme-toggle" title="Тема" aria-label="Переключить тему">🌓</button>
+      <div class="usermenu"><div class="avatar">{{ g.user.name[:1]|upper }}</div><span class="uname">{{ g.user.name }}</span>
+        <form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn ghost sm" type="submit">Выйти</button></form></div>
+    </header>
+    <main class="content">{% block content %}{% endblock %}</main>
+  </div>
+</div>
+{% with msgs = get_flashed_messages(with_categories=true) %}{% if msgs %}
+<div class="toasts">{% for c, m in msgs %}<div class="toast {{ c }}">{{ m }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body></html>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% from "_macros.html" import cols, hbars with context %}
+{% block title %}Аналитика{% endblock %}
+{% block content %}
+<h1>📈 Аналитика</h1>
+<div class="grid g4 mb">
+<div class="card flat stat"><b>{{ tot.total }}</b><span>Всего генераций</span></div>
+<div class="card flat stat"><b>{{ tot.ok or 0 }} / {{ tot.bad or 0 }}</b><span>Успешных / неудачных</span></div>
+<div class="card flat stat"><b>{{ '%.1f'|format(avg) }}</b><span>В среднем на учителя ({{ teachers }})</span></div>
+<div class="card flat stat"><b>{{ ((tot.avg_ms or 0)/1000)|round(1) }} с</b><span>Среднее время успешной генерации</span></div>
+<div class="card flat stat"><b>{{ '$%.2f'|format(tot.cost) }}</b><span>Расходы на AI (оценка, всего)</span></div>
+<div class="card flat stat"><b>{{ '$%.2f'|format(month_cost) }}</b><span>За 30 дней</span></div>
+<div class="card flat stat"><b>{{ tot.tin }}</b><span>Входных токенов</span></div>
+<div class="card flat stat"><b>{{ tot.tout }}</b><span>Выходных токенов</span></div></div>
+<div class="card mb"><h2>Активность по дням · 30 дней</h2>{{ cols(daily) }}</div>
+<div class="grid g2 mb"><div class="card"><h2>Популярные предметы</h2>{{ hbars(subj) }}</div><div class="card"><h2>Востребованные классы</h2>{{ hbars(grades) }}</div></div>
+<div class="grid g2"><div class="card"><h2>Популярные темы</h2>{% if topics %}<ol>{% for t in topics %}<li>{{ t.topic }} <span class="muted small">· {{ t.subject }} · {{ t.c }}</span></li>{% endfor %}</ol>{% else %}<p class="muted">Нет данных.</p>{% endif %}</div>
+<div class="card"><h2>Модели и расходы</h2>{% if models %}<table><thead><tr><th>Модель</th><th>Генераций</th><th>Стоимость</th></tr></thead><tbody>{% for m in models %}<tr><td>{{ m.m }}</td><td>{{ m.c }}</td><td>{{ '$%.4f'|format(m.cost) }}</td></tr>{% endfor %}</tbody></table>
+<p class="muted small">Стоимость — оценка по ценам из настроек (AI_PRICE_*), а не счёт провайдера.</p>{% else %}<p class="muted">Нет данных.</p>{% endif %}</div></div>
+{% endblock %}

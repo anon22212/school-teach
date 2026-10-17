@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Сохранённые материалы{% endblock %}
+{% block content %}
+<div class="row between mb"><h1>Сохранённые материалы</h1><form method="get"><input name="q" value="{{ q }}" placeholder="Поиск по названию или теме" style="min-width:260px"></form></div>
+{% if rows %}<div class="grid g3">{% for r in rows %}
+<a class="card tool tilt" href="{{ url_for('teacher.editor', mid=r.id) }}"><span class="badge">{{ types.get(r.type,'') }}</span><h3 class="mt">{{ r.title }}</h3>
+<p class="muted small">{{ r.subject }} · {{ r.grade }}{{ r.class_letter }}<br>Изменено {{ r.updated_at|dt }}</p></a>{% endfor %}</div>
+{% else %}<div class="card empty"><div class="big">📚</div><h2>{{ 'Ничего не найдено' if q else 'Пока нет сохранённых материалов' }}</h2><p class="muted">Созданные материалы сохраняются автоматически.</p></div>{% endif %}
+{% endblock %}

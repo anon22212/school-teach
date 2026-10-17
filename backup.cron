@@ -1,0 +1,2 @@
+# ежедневно в 03:30; хранятся последние 14 копий
+30 3 * * * teacherai cd /opt/teacherai && .venv/bin/python manage.py backup >> logs/backup.log 2>&1

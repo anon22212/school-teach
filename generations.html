@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% from "_macros.html" import pager, status with context %}
+{% block title %}Журнал генераций{% endblock %}
+{% macro th(key, label) %}<th><a href="{{ url_for('admin.generations', **dict(qs, sort=key, dir=('asc' if sort==key and direction=='desc' else 'desc'))) }}">{{ label }}{{ ' ▼' if sort==key and direction=='desc' else (' ▲' if sort==key else '') }}</a></th>{% endmacro %}
+{% block content %}
+<h1>🗂️ Журнал генераций <span class="muted" style="font-size:1rem">· {{ total }}</span></h1>
+<form method="get" class="card flat mb"><div class="grid g4">
+  <div class="field"><label>Поиск (пользователь, email, тема, предмет)</label><input name="q" value="{{ a.get('q','') }}"></div>
+  <div class="field"><label>Период</label><select name="period" id="period"><option value="">За всё время</option>
+    {% for k,v in [('today','Сегодня'),('7','Последние 7 дней'),('30','Последние 30 дней'),('custom','Произвольный диапазон')] %}<option value="{{ k }}" {{ 'selected' if a.get('period')==k }}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="field custom-dates" hidden><label>С даты</label><input type="date" name="date_from" value="{{ a.get('date_from','') }}"></div>
+  <div class="field custom-dates" hidden><label>По дату</label><input type="date" name="date_to" value="{{ a.get('date_to','') }}"></div>
+  <div class="field"><label>Предмет</label><select name="subject"><option value="">Все</option>{% for s in subjects %}<option {{ 'selected' if a.get('subject')==s }}>{{ s }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Класс</label><select name="grade"><option value="">Все</option>{% for x in grades %}<option {{ 'selected' if a.get('grade')|string==x|string }}>{{ x }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Буква</label><select name="class_letter"><option value="">Все</option>{% for x in letters %}<option {{ 'selected' if a.get('class_letter')==x }}>{{ x }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Тип</label><select name="type"><option value="">Все</option>{% for k,v in types.items() %}<option value="{{ k }}" {{ 'selected' if a.get('type')==k }}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Статус</label><select name="status"><option value="">Все</option>{% for k,v in statuses.items() %}<option value="{{ k }}" {{ 'selected' if a.get('status')==k }}>{{ v }}</option>{% endfor %}</select></div>
+  <div class="field"><label>Пользователь</label><select name="user_id"><option value="">Все</option>{% for u in users %}<option value="{{ u.id }}" {{ 'selected' if a.get('user_id')|string==u.id|string }}>{{ u.name }} ({{ u.email }})</option>{% endfor %}</select></div>
+</div><div class="row"><button class="btn sm" type="submit">Применить</button><a class="btn ghost sm" href="{{ url_for('admin.generations') }}">Сбросить</a></div></form>
+{% if rows %}<div class="tablewrap"><table><thead><tr><th>ID</th>{{ th('created_at','Дата') }}{{ th('user','Пользователь') }}{{ th('type','Тип') }}{{ th('subject','Предмет') }}{{ th('grade','Класс') }}{{ th('class_letter','Буква') }}{{ th('topic','Тема') }}{{ th('variants','Вар.') }}<th>Зад.</th><th>Сложн.</th>{{ th('status','Статус') }}{{ th('duration','Время') }}<th>Модель</th><th>Токены</th><th>Стоимость</th><th></th></tr></thead><tbody>
+{% for r in rows %}<tr><td>#{{ r.id }}</td><td style="white-space:nowrap">{{ r.created_at|dt }}</td><td><a href="{{ url_for('admin.user', uid=r.uid) }}">{{ r.uname }}</a><div class="muted small">{{ r.email }}</div></td>
+<td>{{ types[r.type] }}</td><td>{{ r.subject }}</td><td>{{ r.grade }}</td><td>{{ r.class_letter }}</td><td>{{ r.topic }}</td><td>{{ r.variants_count or '—' }}</td><td>{{ r.tasks_count or '—' }}</td><td>{{ difficulties.get(r.difficulty,'—') }}</td>
+<td>{{ status(r.status, statuses) }}</td><td>{{ ((r.duration_ms or 0)/1000)|round(1) ~ ' с' if r.duration_ms is not none else '—' }}</td><td class="small">{{ r.model_name or '—' }}</td>
+<td class="small">{% if r.input_tokens is not none %}{{ r.input_tokens }} / {{ r.output_tokens }}{% else %}—{% endif %}</td><td class="small">{{ ('$%.4f'|format(r.estimated_cost)) if r.estimated_cost is not none else '—' }}</td>
+<td><a class="btn sm" href="{{ url_for('admin.generation', gid=r.id) }}">Просмотр</a></td></tr>{% endfor %}</tbody></table></div>
+{{ pager(page, pages, 'admin.generations', qs) }}
+{% else %}<div class="card empty"><div class="big">🔎</div><h2>Ничего не найдено</h2><p class="muted">Измените фильтры или период.</p></div>{% endif %}
+{% endblock %}

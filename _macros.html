@@ -1,0 +1,57 @@
+{% macro field(name, label, errors, type='text', value='', hint='', attrs='') %}
+<div class="field {{ 'has-err' if errors and errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}</label>
+  <input id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ value }}" {{ attrs|safe }}>
+  {% if hint %}<div class="hint">{{ hint }}</div>{% endif %}
+  {% if errors and errors.get(name) %}<div class="err">{{ errors[name] }}</div>{% endif %}
+</div>
+{% endmacro %}
+
+{% macro csrf() %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endmacro %}
+
+{% macro status(s, statuses) %}<span class="badge {{ s }}">{{ statuses.get(s, s) }}</span>{% endmacro %}
+
+{% macro pager(page, pages, endpoint, qs={}) %}
+{% if pages > 1 %}<div class="pager">
+  {% if page > 1 %}<a class="btn ghost sm" href="{{ url_for(endpoint, page=page-1, **qs) }}">← Назад</a>{% endif %}
+  <span class="muted">Страница {{ page }} из {{ pages }}</span>
+  {% if page < pages %}<a class="btn ghost sm" href="{{ url_for(endpoint, page=page+1, **qs) }}">Далее →</a>{% endif %}
+</div>{% endif %}
+{% endmacro %}
+
+{% macro cols(data) %}
+<div class="cols">{% for l, v, p in data %}<div class="col" title="{{ l }}: {{ v }}"><div class="bar" style="height:{{ p }}%"></div><small>{{ l }}</small></div>{% endfor %}</div>
+{% endmacro %}
+
+{% macro hbars(data) %}
+{% if data %}<div class="hbars">{% for l, v, p in data %}<div class="hbar"><span>{{ l }}</span><div class="track"><div class="fill" style="width:{{ p }}%"></div></div><b>{{ v }}</b></div>{% endfor %}</div>
+{% else %}<p class="muted">Пока нет данных.</p>{% endif %}
+{% endmacro %}
+
+{# Просмотр материала (только чтение). keys=True — показывать ответы и решения #}
+{% macro material(c, keys=True) %}
+<div class="mat">
+{% if c.meta.kind == 'lesson' %}
+  <h3>Цели урока</h3><ul>{% for x in c.goals %}<li>{{ x }}</li>{% endfor %}</ul>
+  <h3>План урока</h3>{% for s in c.stages %}<div class="task"><b>{{ s.name }}</b> — {{ s.minutes }} мин.<br>{{ s.description }}</div>{% endfor %}
+  {% if c.explanation %}<h3>Объяснение материала</h3><p style="white-space:pre-wrap">{{ c.explanation }}</p>{% endif %}
+  {% if c.examples %}<h3>Примеры</h3><ol>{% for x in c.examples %}<li style="white-space:pre-wrap">{{ x }}</li>{% endfor %}</ol>{% endif %}
+  {% if c.questions %}<h3>Вопросы для класса</h3><ol>{% for x in c.questions %}<li>{{ x }}</li>{% endfor %}</ol>{% endif %}
+  {% if c.practice %}<h3>Практические задания</h3>{% for p in c.practice %}<div class="task">{{ loop.index }}. {{ p.text }}{% if keys and p.answer %}<div class="key">Ответ: {{ p.answer }}</div>{% endif %}</div>{% endfor %}{% endif %}
+  {% if keys and c.teacher_notes %}<h3>Ответы и пояснения для учителя</h3><p style="white-space:pre-wrap">{{ c.teacher_notes }}</p>{% endif %}
+  {% if c.homework %}<h3>Домашнее задание</h3><p style="white-space:pre-wrap">{{ c.homework }}</p>{% endif %}
+  {% if c.summary %}<h3>Краткий итог урока</h3><p style="white-space:pre-wrap">{{ c.summary }}</p>{% endif %}
+{% else %}
+  {% for v in c.variants %}
+    <h3>Вариант {{ loop.index }}</h3>
+    {% for t in v.tasks %}<div class="task"><b>{{ loop.index }}.</b> <span style="white-space:pre-wrap">{{ t.text }}</span> <span class="muted small">({{ t.points|num }} б.)</span>
+      {% if t.options %}<ol class="opts" type="A">{% for o in t.options %}<li>{{ o }}</li>{% endfor %}</ol>{% endif %}
+      {% if keys %}<div class="key">Ответ: {% if t.options %}{{ 'АБВГДЕ'[t.correct] }}) {{ t.options[t.correct] }}{% else %}{{ t.answer }}{% endif %}
+        {% if t.verified is sameas true %} <span class="badge success">вычисления проверены</span>{% elif t.verified is sameas false %} <span class="badge error">проверьте вычисления</span>{% endif %}
+        {% if t.solution %}<br><span class="muted" style="white-space:pre-wrap">Решение: {{ t.solution }}</span>{% endif %}</div>{% endif %}
+    </div>{% endfor %}
+  {% endfor %}
+  {% if keys and c.criteria %}<h3>Критерии оценивания</h3><ul>{% for x in c.criteria %}<li>{{ x }}</li>{% endfor %}</ul>{% endif %}
+{% endif %}
+</div>
+{% endmacro %}

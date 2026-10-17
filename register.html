@@ -1,0 +1,12 @@
+{% extends "base_public.html" %}{% from "_macros.html" import csrf, field with context %}
+{% block title %}Регистрация{% endblock %}
+{% block content %}<div class="authbox"><div class="card"><h1>Регистрация учителя</h1>
+<form method="post">{{ csrf() }}
+ {{ field('name','Имя и фамилия',errors,'text',form.get('name',''),attrs='required maxlength=80 autocomplete=name')}}
+ {{ field('email','Email',errors,'email',form.get('email',''),attrs='required autocomplete=username')}}
+ {{ field('password','Пароль',errors,'password','',hint='Не короче 8 символов, буквы и цифры',attrs='required autocomplete=new-password')}}
+ {{ field('password2','Повторите пароль',errors,'password','',attrs='required autocomplete=new-password')}}
+ <div class="field {{ 'has-err' if errors.get('agree') }}"><label class="chk"><input type="checkbox" name="agree" value="1" required> <span class="small">Я принимаю <a href="{{ url_for('public.privacy') }}" target="_blank">условия</a> и знаю, что администраторы платформы могут просматривать мои генерации</span></label>
+ {% if errors.get('agree') %}<div class="err">{{ errors.agree }}</div>{% endif %}</div>
+ <button class="btn" style="width:100%" type="submit">Создать аккаунт</button>
+</form><p class="small mt">Уже есть аккаунт? <a href="{{ url_for('auth.login') }}">Войти</a></p></div></div>{% endblock %}

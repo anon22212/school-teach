@@ -1,0 +1,77 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf with context %}
+{% block title %}{{ title }}{% endblock %}
+{% macro fe(n) %}{% if errors.get(n) %}<div class="err">{{ errors[n] }}</div>{% endif %}{% endmacro %}
+{% block content %}
+{% set f = form %}
+{% set fresh = request.method == 'GET' %}
+{% set kinds = f.getlist('task_kinds') if f.getlist is defined else [] %}
+<h1>{{ {'work':'📝','test':'✅','lesson':'🎓'}[mode] }} {{ title }}</h1>
+{% if not ai_ready %}<div class="alert warn"><b>Режим настройки.</b> AI не подключён — генерация сейчас недоступна. Администратору: задайте <code>AI_API_KEY</code> и <code>AI_MODEL</code> в окружении сервера (см. README).</div>{% endif %}
+{% if errors %}<div class="alert error">Проверьте выделенные поля — без обязательных данных генерация не запускается.</div>{% endif %}
+<form method="post" data-generate novalidate>
+{{ csrf() }}<input type="hidden" name="request_token" value="{{ token }}">
+<div class="card mb"><h2>Основное</h2>
+  <div class="grid g3">
+    <div class="field {{ 'has-err' if errors.get('subject') }}"><label for="subject">Предмет *</label>
+      <select id="subject" name="subject" data-other="#subject-other" required><option value="">— выберите —</option>
+        {% for s in subjects %}<option {{ 'selected' if f.get('subject')==s }}>{{ s }}</option>{% endfor %}<option value="__other" {{ 'selected' if f.get('subject')=='__other' }}>Другой предмет…</option></select>
+      <div id="subject-other" hidden style="margin-top:8px"><input name="subject_other" placeholder="Название предмета" value="{{ f.get('subject_other','') }}" maxlength="60"></div>{{ fe('subject') }}</div>
+    <div class="field {{ 'has-err' if errors.get('grade') }}"><label for="grade">Класс *</label>
+      <select id="grade" name="grade" required><option value="">— выберите —</option>{% for g_ in grades %}<option {{ 'selected' if f.get('grade')|string==g_|string }}>{{ g_ }}</option>{% endfor %}</select>{{ fe('grade') }}</div>
+    <div class="field {{ 'has-err' if errors.get('class_letter') }}"><label for="class_letter">Буква класса *</label>
+      <select id="class_letter" name="class_letter" data-other="#letter-other" required><option value="">— выберите —</option>
+        {% for l in letters %}<option {{ 'selected' if f.get('class_letter')==l }}>{{ l }}</option>{% endfor %}<option value="__other" {{ 'selected' if f.get('class_letter')=='__other' }}>Другая…</option></select>
+      <div id="letter-other" hidden style="margin-top:8px"><input name="class_letter_other" placeholder="Например, Э" value="{{ f.get('class_letter_other','') }}" maxlength="3"></div>{{ fe('class_letter') }}</div>
+  </div>
+  <div class="field {{ 'has-err' if errors.get('topic') }}"><label for="topic">Тема *</label>
+    <input id="topic" name="topic" value="{{ f.get('topic','') }}" maxlength="200" placeholder="Например: Закон Ома для участка цепи" required>{{ fe('topic') }}</div>
+</div>
+
+{% if mode == 'lesson' %}
+<div class="card mb"><h2>Параметры урока</h2>
+  <div class="field {{ 'has-err' if errors.get('duration_minutes') }}"><label for="duration_minutes">Продолжительность, мин *</label>
+    <select id="duration_minutes" name="duration_minutes">{% for d in [30,40,45,60,90] %}<option {{ 'selected' if (f.get('duration_minutes') or '45')|string==d|string }}>{{ d }}</option>{% endfor %}</select>{{ fe('duration_minutes') }}</div>
+  <div class="field"><label for="goals">Цели урока</label><textarea id="goals" name="goals" maxlength="1000">{{ f.get('goals','') }}</textarea></div>
+  <div class="field"><label for="wishes">Дополнительные пожелания</label><textarea id="wishes" name="wishes" maxlength="1000" placeholder="Например: больше практики, работа в парах">{{ f.get('wishes','') }}</textarea></div>
+</div>
+{% else %}
+<div class="card mb"><h2>Состав работы</h2>
+  <div class="grid g3">
+    {% if mode == 'work' %}<div class="field {{ 'has-err' if errors.get('work_type') }}"><label for="work_type">Формат работы *</label>
+      <select id="work_type" name="work_type">{% for k, v in work_types.items() %}<option value="{{ k }}" {{ 'selected' if f.get('work_type')==k }}>{{ v }}</option>{% endfor %}</select>{{ fe('work_type') }}</div>{% endif %}
+    <div class="field {{ 'has-err' if errors.get('variants_count') }}"><label for="variants_count">Количество вариантов * ({{ '1–10' if mode=='work' else '1–5' }})</label>
+      <input id="variants_count" name="variants_count" type="number" min="1" max="{{ 10 if mode=='work' else 5 }}" value="{{ f.get('variants_count','2') }}" required>{{ fe('variants_count') }}</div>
+    <div class="field {{ 'has-err' if errors.get('tasks_count') }}"><label for="tasks_count">{{ 'Заданий в варианте' if mode=='work' else 'Вопросов в тесте' }} *</label>
+      <input id="tasks_count" name="tasks_count" type="number" min="1" max="{{ 30 if mode=='work' else 40 }}" value="{{ f.get('tasks_count','6' if mode=='work' else '10') }}" required>{{ fe('tasks_count') }}</div>
+    {% if mode == 'test' %}<div class="field {{ 'has-err' if errors.get('options_count') }}"><label for="options_count">Вариантов ответа *</label>
+      <input id="options_count" name="options_count" type="number" min="2" max="6" value="{{ f.get('options_count','4') }}" required>{{ fe('options_count') }}</div>{% endif %}
+    <div class="field {{ 'has-err' if errors.get('difficulty') }}"><label for="difficulty">Сложность *</label>
+      <select id="difficulty" name="difficulty">{% for k, v in difficulties.items() %}<option value="{{ k }}" {{ 'selected' if f.get('difficulty', 'mixed')==k }}>{{ v }}</option>{% endfor %}</select>{{ fe('difficulty') }}</div>
+    <div class="field {{ 'has-err' if errors.get('duration_minutes') }}"><label for="duration_minutes">Продолжительность, мин *</label>
+      <select id="duration_minutes" name="duration_minutes">{% for d in durations %}<option {{ 'selected' if (f.get('duration_minutes') or '45')|string==d|string }}>{{ d }}</option>{% endfor %}</select>{{ fe('duration_minutes') }}</div>
+  </div>
+</div>
+{% if mode == 'work' %}
+<div class="card mb"><h2>Дополнительно</h2>
+  <div class="field"><label>Типы заданий</label><div class="checks">{% for k in task_kinds %}<label class="chk"><input type="checkbox" name="task_kinds" value="{{ k }}" {{ 'checked' if k in kinds }}>{{ k }}</label>{% endfor %}</div></div>
+  <div class="grid g2">
+    <div class="field {{ 'has-err' if errors.get('max_score') }}"><label for="max_score">Максимальный балл за вариант</label><input id="max_score" name="max_score" type="number" min="1" max="200" value="{{ f.get('max_score','') }}" placeholder="по умолчанию — число заданий">{{ fe('max_score') }}</div>
+    <div class="field"><label for="grading">Система оценивания</label><select id="grading" name="grading">{% for k, v in grading.items() %}<option value="{{ k }}" {{ 'selected' if f.get('grading','five')==k }}>{{ v }}</option>{% endfor %}</select></div>
+  </div>
+  <div class="checks mb">
+    <label class="chk"><input type="checkbox" name="with_answers" value="1" {{ 'checked' if fresh or f.get('with_answers') }}>Ответы</label>
+    <label class="chk"><input type="checkbox" name="with_solutions" value="1" {{ 'checked' if fresh or f.get('with_solutions') }}>Подробные решения</label>
+    <label class="chk"><input type="checkbox" name="with_criteria" value="1" {{ 'checked' if fresh or f.get('with_criteria') }}>Критерии оценивания</label>
+  </div>
+  <div class="field"><label for="goals">Учебные цели</label><textarea id="goals" name="goals" maxlength="1000">{{ f.get('goals','') }}</textarea></div>
+  <div class="field"><label for="wishes">Особые пожелания</label><textarea id="wishes" name="wishes" maxlength="1000" placeholder="Не указывайте персональные данные учеников. Если нужен конкретный учебник — укажите автора и название.">{{ f.get('wishes','') }}</textarea></div>
+</div>
+{% else %}
+<div class="card mb"><div class="field"><label for="wishes">Особые пожелания</label><textarea id="wishes" name="wishes" maxlength="1000">{{ f.get('wishes','') }}</textarea></div></div>
+{% endif %}
+{% endif %}
+<div class="row between"><p class="muted small grow">🔒 Администраторы платформы могут просматривать параметры и результаты генераций. <a href="{{ url_for('public.privacy') }}">Подробнее</a></p>
+<button class="btn ok" type="submit" {{ 'disabled' if not ai_ready }}>✨ Сгенерировать</button></div>
+</form>
+<div class="loader" id="loader"><div><div class="wrap"><div class="cube"><i></i><i></i><i></i><i></i><i></i><i></i></div></div><h2>Готовим материал…</h2><p class="muted">Обычно это занимает от 20 секунд до 2 минут. Не закрывайте страницу.</p></div></div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "_macros.html" import pager with context %}
+{% block title %}Пользователи{% endblock %}
+{% block content %}
+<div class="row between mb"><h1>👥 Пользователи <span class="muted" style="font-size:1rem">· {{ total }}</span></h1><form method="get"><input name="q" value="{{ q }}" placeholder="Поиск по имени или email" style="min-width:260px"></form></div>
+{% if rows %}<div class="tablewrap"><table><thead><tr><th>Имя</th><th>Email</th><th>Роль</th><th>Статус</th><th>Регистрация</th><th>Последняя активность</th><th>Генераций</th><th></th></tr></thead><tbody>
+{% for u in rows %}<tr><td><b>{{ u.name }}</b></td><td>{{ u.email }}</td><td>{{ 'Админ' if u.role=='admin' else 'Учитель' }}</td><td><span class="badge {{ 'success' if u.status=='active' else 'suspended' }}">{{ 'Активен' if u.status=='active' else 'Приостановлен' }}</span></td>
+<td>{{ u.created_at|d }}</td><td>{{ u.last_active_at|dt }}</td><td>{{ u.gens }}</td><td><a class="btn ghost sm" href="{{ url_for('admin.user', uid=u.id) }}">Открыть</a></td></tr>{% endfor %}</tbody></table></div>
+{{ pager(page, pages, 'admin.users', {'q': q} if q else {}) }}
+{% else %}<div class="card empty"><div class="big">🔎</div><p class="muted">Пользователи не найдены.</p></div>{% endif %}
+<p class="muted small mt">Подписки и тарифы в этой версии не реализованы.</p>
+{% endblock %}

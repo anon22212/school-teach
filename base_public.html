@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{% block title %}TeacherAI{% endblock %} — TeacherAI</title>
+<meta name="color-scheme" content="light dark">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+<header class="pubnav">
+  <a class="brand" href="{{ url_for('public.index') }}" style="margin:0"><span class="logo3d">T</span>TeacherAI</a>
+  <div class="grow"></div>
+  <button class="btn ghost sm" id="theme-toggle" aria-label="Переключить тему">🌓</button>
+  <a class="btn ghost sm" href="{{ url_for('auth.login') }}">Войти</a>
+  <a class="btn sm" href="{{ url_for('auth.register') }}">Регистрация</a>
+</header>
+{% block content %}{% endblock %}
+{% with msgs = get_flashed_messages(with_categories=true) %}{% if msgs %}
+<div class="toasts">{% for c, m in msgs %}<div class="toast {{ c }}">{{ m }}</div>{% endfor %}</div>{% endif %}{% endwith %}
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body></html>

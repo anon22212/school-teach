@@ -1,0 +1,7 @@
+{% extends "base.html" if g.user else "base_public.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+{% if not g.user %}<div class="authbox">{% else %}<div>{% endif %}
+<div class="card empty"><div class="big">🧭</div><h1>{{ code }} — {{ title }}</h1><p class="muted">{{ text }}</p>
+<a class="btn" href="{{ url_for('public.index') }}">На главную</a></div></div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf with context %}
+{% block title %}{{ m.title }}{% endblock %}
+{% block content %}
+{% set kind = content.meta.kind %}
+<div class="row between mb"><div><span class="badge">{{ types.get(kind,'') }}</span>
+<h1 style="margin:8px 0 0">{{ m.title }}</h1>
+<div class="muted small">{{ content.meta.subject }} · {{ content.meta.grade }}{{ content.meta.class_letter }} · {{ content.meta.topic }}{% if kind != 'lesson' and content.meta.max_score %} · максимум {{ content.meta.max_score|num }} б.{% endif %}</div></div></div>
+{% if content.warnings %}<div class="alert warn"><b>Обратите внимание:</b><ul style="margin:6px 0 0">{% for w in content.warnings %}<li>{{ w }}</li>{% endfor %}</ul></div>{% endif %}
+
+<div class="card mb"><h3>Экспорт</h3><div class="row">
+{% if kind == 'lesson' %}
+  <a class="btn sm" href="{{ url_for('teacher.export_material', mid=m.id, kind='teacher', fmt='pdf') }}">PDF</a>
+  <a class="btn sm" href="{{ url_for('teacher.export_material', mid=m.id, kind='teacher', fmt='docx') }}">DOCX</a>
+  <a class="btn ghost sm" href="{{ url_for('teacher.print_material', mid=m.id, kind='teacher') }}">🖨️ Печать</a>
+  {% if m.generation_id %}<a class="btn warn sm" href="{{ url_for('teacher.generator', mode='work', from_lesson=m.generation_id) }}">📝 Контрольная по уроку</a>
+  <a class="btn ok sm" href="{{ url_for('teacher.generator', mode='test', from_lesson=m.generation_id) }}">✅ Тест по уроку</a>{% endif %}
+{% else %}
+  <span class="muted small">Ученику:</span>
+  <a class="btn sm" href="{{ url_for('teacher.export_material', mid=m.id, kind='student', fmt='pdf') }}">PDF</a>
+  <a class="btn sm" href="{{ url_for('teacher.export_material', mid=m.id, kind='student', fmt='docx') }}">DOCX</a>
+  <a class="btn ghost sm" href="{{ url_for('teacher.print_material', mid=m.id, kind='student') }}">🖨️ Печать</a>
+  <span class="muted small" style="margin-left:12px">Учителю (ответы и решения):</span>
+  <a class="btn warn sm" href="{{ url_for('teacher.export_material', mid=m.id, kind='teacher', fmt='pdf') }}">PDF</a>
+  <a class="btn warn sm" href="{{ url_for('teacher.export_material', mid=m.id, kind='teacher', fmt='docx') }}">DOCX</a>
+  <a class="btn ghost sm" href="{{ url_for('teacher.print_material', mid=m.id, kind='teacher') }}">🖨️ Печать</a>
+{% endif %}
+</div><p class="muted small mt" style="margin-bottom:0">Экспорт использует сохранённую версию — сначала нажмите «Сохранить» в редакторе.</p></div>
+
+{% if kind == 'test' %}
+<div class="card mb"><h3>Прохождение по ссылке</h3>
+{% if share and share.active %}
+  <p class="muted small">Ученики видят вопросы, а правильные ответы — только после завершения.</p>
+  {% set link = base ~ url_for('public.take_test', token=share.token) %}
+  <div class="row"><input readonly value="{{ link }}" style="flex:1;min-width:240px"><button class="btn sm" type="button" data-copy="{{ link }}">Копировать</button>
+  <form method="post" action="{{ url_for('teacher.share', mid=m.id) }}">{{ csrf() }}<input type="hidden" name="action" value="disable"><button class="btn ghost sm" type="submit">Отключить</button></form></div>
+  {% if content.variants|length > 1 %}<p class="muted small mt">Для другого варианта добавьте <code>?v=2</code>, <code>?v=3</code>… к ссылке.</p>{% endif %}
+  {% if attempts %}<div class="tablewrap mt"><table><thead><tr><th>Ученик</th><th>Вариант</th><th>Результат</th><th>Когда</th></tr></thead><tbody>{% for a in attempts %}<tr><td>{{ a.student_name }}</td><td>{{ a.variant }}</td><td>{{ a.score|num }} / {{ a.max_score|num }}</td><td>{{ a.created_at|dt }}</td></tr>{% endfor %}</tbody></table></div>{% endif %}
+{% else %}
+  <p class="muted">Тест сейчас личный. Включите ссылку, чтобы ученики могли пройти его онлайн.</p>
+  <form method="post" action="{{ url_for('teacher.share', mid=m.id) }}">{{ csrf() }}<input type="hidden" name="action" value="enable"><button class="btn ok sm" type="submit">Включить ссылку</button></form>
+{% endif %}</div>
+{% endif %}
+
+<div id="editor" data-save-url="{{ url_for('teacher.save_material', mid=m.id) }}" data-csrf="{{ csrf_token() }}" data-kind="{{ kind }}"></div>
+<script type="application/json" id="content-data">{{ content|tojson }}</script>
+
+<div class="card mt"><h3>Удаление</h3><form method="post" action="{{ url_for('teacher.delete_material', mid=m.id) }}" data-confirm="Удалить материал безвозвратно?">{{ csrf() }}<button class="btn bad sm" type="submit">Удалить материал</button></form></div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/editor.js') }}"></script>{% endblock %}

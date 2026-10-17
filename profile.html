@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% from "_macros.html" import csrf with context %}
+{% block title %}Настройки{% endblock %}
+{% block content %}
+<h1>Настройки профиля</h1>
+{% if msg %}<div class="alert success">{{ msg }}</div>{% endif %}{% if err %}<div class="alert error">{{ err }}</div>{% endif %}
+<div class="grid g2">
+<div class="card"><h2>Профиль</h2><p class="muted small">{{ g.user.email }} · {{ 'Администратор' if g.user.role=='admin' else 'Учитель' }}</p>
+<form method="post">{{ csrf() }}<input type="hidden" name="action" value="name"><div class="field"><label for="name">Имя</label><input id="name" name="name" value="{{ g.user.name }}" maxlength="80" required></div><button class="btn" type="submit">Сохранить</button></form></div>
+<div class="card"><h2>Смена пароля</h2><form method="post">{{ csrf() }}<input type="hidden" name="action" value="password">
+<div class="field"><label>Текущий пароль</label><input name="current" type="password" required autocomplete="current-password"></div>
+<div class="field"><label>Новый пароль</label><input name="password" type="password" required autocomplete="new-password"></div>
+<div class="field"><label>Повторите</label><input name="password2" type="password" required autocomplete="new-password"></div><button class="btn" type="submit">Изменить</button></form></div>
+</div>
+{% if g.user.role != 'admin' %}<div class="card mt"><h2>Удаление аккаунта</h2><p class="muted">Будут безвозвратно удалены аккаунт, история генераций и сохранённые материалы.</p>
+<form method="post" action="{{ url_for('auth.delete_account') }}" data-confirm="Удалить аккаунт и все данные без возможности восстановления?">{{ csrf() }}
+<div class="field" style="max-width:320px"><label>Пароль для подтверждения</label><input name="password" type="password" required></div><button class="btn bad" type="submit">Удалить аккаунт</button></form></div>{% endif %}
+<p class="muted small mt"><a href="{{ url_for('public.privacy') }}">Какие данные видят администраторы</a></p>
+{% endblock %}

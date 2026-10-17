@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Печать{% endblock %}
+{% block content %}
+<div class="row noprint mb"><button class="btn" data-print>🖨️ Печать</button><button class="btn ghost" data-back>← Назад</button></div>
+<div class="printdoc">{% for k, t in blocks %}{% if k=='h1' %}<h1>{{ t }}</h1>{% elif k=='h2' %}<h2>{{ t }}</h2>{% elif k=='pb' %}<div class="pb"></div>{% elif k=='li' %}<p class="li">{{ t }}</p>{% elif k=='line' %}<p>{{ t }}</p>{% else %}<p style="white-space:pre-wrap">{{ t }}</p>{% endif %}{% endfor %}</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% from "_macros.html" import status with context %}
+{% block title %}Генерация #{{ r.id }}{% endblock %}
+{% block content %}
+<h1>Генерация #{{ r.id }} {{ status(r.status, statuses) }}</h1>
+<div class="card mb"><div class="grid g3">
+<div><span class="muted small">Тип</span><br><b>{{ types[r.type] }}</b></div><div><span class="muted small">Предмет</span><br><b>{{ r.subject }}</b></div>
+<div><span class="muted small">Класс</span><br><b>{{ r.grade }}{{ r.class_letter }}</b></div><div><span class="muted small">Тема</span><br><b>{{ r.topic }}</b></div>
+<div><span class="muted small">Создано</span><br><b>{{ r.created_at|dt }}</b></div><div><span class="muted small">Варианты × задания</span><br><b>{{ r.variants_count or '—' }} × {{ r.tasks_count or '—' }}</b></div></div></div>
+{% if r.status == 'error' %}<div class="alert error"><b>Не удалось создать материал.</b><br>{{ r.error_message }}</div>
+<a class="btn" href="{{ url_for('teacher.generator', mode='lesson' if r.type=='lesson' else ('test' if r.type=='test' else 'work')) }}">Попробовать ещё раз</a>
+{% elif mid %}<a class="btn" href="{{ url_for('teacher.editor', mid=mid) }}">Открыть материал</a>{% else %}<p class="muted">Генерация ещё выполняется или результат недоступен.</p>{% endif %}
+{% endblock %}

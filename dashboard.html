@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% from "_macros.html" import cols, hbars, status with context %}
+{% block title %}Дашборд{% endblock %}
+{% block content %}
+<h1>📊 Дашборд администратора</h1>
+<div class="grid g4 mb">
+  <div class="card flat stat"><b>{{ s.users }}</b><span>Учителей зарегистрировано</span></div>
+  <div class="card flat stat"><b>{{ s.active }}</b><span>Активны за 30 дней</span></div>
+  <div class="card flat stat"><b>{{ s.works }}</b><span>Контрольных и работ</span></div>
+  <div class="card flat stat"><b>{{ s.tests }} / {{ s.lessons }}</b><span>Тесты / планы уроков</span></div>
+  <div class="card flat stat"><b>{{ s.day }}</b><span>Генераций сегодня</span></div>
+  <div class="card flat stat"><b>{{ s.week }}</b><span>За 7 дней</span></div>
+  <div class="card flat stat"><b>{{ s.month }}</b><span>За 30 дней</span></div>
+  <a class="card flat stat tilt" href="{{ url_for('admin.generations') }}"><b>→</b><span>Журнал генераций</span></a>
+</div>
+<div class="card mb"><h2>Динамика использования · 30 дней</h2>{{ cols(daily) }}</div>
+<div class="grid g2 mb"><div class="card"><h2>По предметам</h2>{{ hbars(subj) }}</div><div class="card"><h2>По классам</h2>{{ hbars(grades) }}</div></div>
+<div class="card"><div class="row between"><h2>Последние действия</h2><a href="{{ url_for('admin.generations') }}" class="small">Весь журнал →</a></div>
+{% if recent %}<div class="tablewrap"><table><thead><tr><th>Когда</th><th>Пользователь</th><th>Тип</th><th>Предмет</th><th>Класс</th><th>Тема</th><th>Статус</th><th></th></tr></thead><tbody>
+{% for r in recent %}<tr><td>{{ r.created_at|dt }}</td><td>{{ r.uname }}</td><td>{{ types[r.type] }}</td><td>{{ r.subject }}</td><td>{{ r.grade }}{{ r.class_letter }}</td><td>{{ r.topic }}</td><td>{{ status(r.status, statuses) }}</td><td><a class="btn ghost sm" href="{{ url_for('admin.generation', gid=r.id) }}">Открыть</a></td></tr>{% endfor %}</tbody></table></div>
+{% else %}<div class="empty"><div class="big">🌱</div><p class="muted">Пока никто ничего не генерировал.</p></div>{% endif %}</div>
+{% endblock %}

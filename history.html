@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% from "_macros.html" import pager, status with context %}
+{% block title %}История{% endblock %}
+{% block content %}
+<div class="row between mb"><h1>История генераций</h1>
+<form method="get" data-autosubmit><select name="type" style="min-width:210px"><option value="">Все типы</option>{% for k,v in types.items() %}<option value="{{ k }}" {{ 'selected' if cur_type==k }}>{{ v }}</option>{% endfor %}</select></form></div>
+{% if rows %}<div class="tablewrap"><table><thead><tr><th>Дата</th><th>Тип</th><th>Предмет</th><th>Класс</th><th>Тема</th><th>Вар.</th><th>Статус</th><th></th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.created_at|dt }}</td><td>{{ types[r.type] }}</td><td>{{ r.subject }}</td><td>{{ r.grade }}{{ r.class_letter }}</td><td>{{ r.topic }}</td><td>{{ r.variants_count or '—' }}</td><td>{{ status(r.status, statuses) }}</td>
+<td class="right">{% if r.mid %}<a class="btn sm" href="{{ url_for('teacher.editor', mid=r.mid) }}">Открыть</a>{% else %}<a class="btn ghost sm" href="{{ url_for('teacher.history_item', gid=r.id) }}">Подробнее</a>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>{{ pager(page, pages, 'teacher.history', {'type': cur_type} if cur_type else {}) }}
+{% else %}<div class="card empty"><div class="big">🕘</div><h2>История пока пуста</h2><p class="muted">Здесь появятся все ваши генерации.</p><a class="btn" href="{{ url_for('teacher.generator', mode='work') }}">Создать контрольную</a></div>{% endif %}
+{% endblock %}

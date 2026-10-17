@@ -1,0 +1,9 @@
+{% extends "base_public.html" %}{% from "_macros.html" import csrf with context %}
+{% block title %}Новый пароль{% endblock %}
+{% block content %}<div class="authbox"><div class="card"><h1>Новый пароль</h1>
+{% if not valid %}<div class="alert error">Ссылка недействительна или устарела.</div><a class="btn" href="{{ url_for('auth.forgot') }}">Запросить новую</a>
+{% else %}{% if error %}<div class="alert error">{{ error }}</div>{% endif %}
+<form method="post">{{ csrf() }}
+<div class="field"><label for="password">Новый пароль</label><input id="password" name="password" type="password" required autocomplete="new-password"></div>
+<div class="field"><label for="password2">Повторите пароль</label><input id="password2" name="password2" type="password" required autocomplete="new-password"></div>
+<button class="btn" style="width:100%" type="submit">Сохранить</button></form>{% endif %}</div></div>{% endblock %}
