@@ -6,9 +6,9 @@ from logging.handlers import RotatingFileHandler
 
 from flask import Flask, g, render_template, request, session
 
-from . import ai, db
-from .config import load_config
-from .security import check_csrf, csrf_token
+from import ai, db
+from config import load_config
+from security import check_csrf, csrf_token
 
 
 def create_app(overrides=None):
@@ -20,7 +20,7 @@ def create_app(overrides=None):
     db.migrate(app.config["DATABASE_PATH"])
     app.teardown_appcontext(db.close_db)
 
-    from . import admin, auth, public, teacher
+    from import admin, auth, public, teacher
     for bp in (auth.bp, teacher.bp, admin.bp, public.bp):
         app.register_blueprint(bp)
 
