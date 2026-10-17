@@ -26,8 +26,14 @@ def create_app(overrides=None):
     for bp in (auth.bp, teacher.bp, admin.bp, public.bp):
         app.register_blueprint(bp)
 
+        app.database_initialized = False
+
     @app.before_request
     def load_user():
+        if not getattr(app, "database_initialized", False):
+            db.migrate(app.config["DATABASE_PATH"])
+            app.database_initialized = True
+
         g.user = None
         uid = session.get("uid")
         if uid:
@@ -40,6 +46,7 @@ def create_app(overrides=None):
             else:
                 session.clear()
         check_csrf()
+
 
     @app.after_request
     def headers(resp):
